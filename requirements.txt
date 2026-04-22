@@ -1,0 +1,28 @@
+# Claudio - AI Music Curation Agent 依赖
+
+# 核心框架
+python-telegram-bot>=20.0
+python-dotenv>=1.0.0
+pyyaml>=6.0
+
+# AI 模型
+anthropic>=0.21.0
+openai>=1.0.0
+
+# 音乐 API
+requests>=2.31.0
+spotipy>=2.23.0
+
+# TTS
+# fish-audio-python  # 需要时安装
+# elevenlabs>=0.2.0  # 需要时安装
+
+# 定时任务
+schedule>=1.2.0
+
+# 数据存储
+sqlite3  # 内置
+
+# 工具
+pydantic>=2.0.0
+aiohttp>=3.9.0

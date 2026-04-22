@@ -1,0 +1,29 @@
+[Unit]
+Description=Claudio AI Music DJ
+After=network.target
+
+[Service]
+Type=simple
+User=claudio
+WorkingDirectory=/opt/claudio
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/opt/claudio/.env
+
+# 启动网易云音乐 API
+ExecStartPre=/bin/bash -c 'npx NeteaseCloudMusicApi &'
+ExecStartPre=/bin/sleep 5
+
+# 启动 Claudio Bot
+ExecStart=/opt/claudio/venv/bin/python bot.py
+
+# 重启策略
+Restart=always
+RestartSec=10
+
+# 日志
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=claudio
+
+[Install]
+WantedBy=multi-user.target

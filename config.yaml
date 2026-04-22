@@ -1,0 +1,61 @@
+# Claudio - AI Music Curation Agent 配置
+
+# Telegram Bot 配置
+telegram:
+  bot_token: "${TELEGRAM_BOT_TOKEN}"
+  webhook_url: "${WEBHOOK_URL}"
+  admin_users:
+    - "${ADMIN_USER_ID}"
+
+# AI 模型配置
+ai:
+  provider: "anthropic"  # 或 "moonshot" 使用 Kimi
+  model: "claude-3-5-sonnet-20241022"
+  # model: "kimi-k2-6"  # 如果使用 Moonshot
+  temperature: 0.7
+  max_tokens: 2000
+
+# 音乐源配置
+music_sources:
+  # 网易云音乐（国内友好）
+  netease:
+    enabled: true
+    api_base: "https://netease-cloud-music-api.vercel.app"
+    
+  # Spotify（需要代理）
+  spotify:
+    enabled: false
+    client_id: "${SPOTIFY_CLIENT_ID}"
+    client_secret: "${SPOTIFY_CLIENT_SECRET}"
+    redirect_uri: "http://localhost:8888/callback"
+    
+  # Apple Music
+  apple_music:
+    enabled: false
+    developer_token: "${APPLE_MUSIC_DEV_TOKEN}"
+
+# TTS 配置（DJ 语音）
+tts:
+  provider: "fish_audio"  # 或 "elevenlabs"
+  fish_audio:
+    api_key: "${FISH_AUDIO_API_KEY}"
+    voice_id: "claudio_dj_voice"
+  elevenlabs:
+    api_key: "${ELEVENLABS_API_KEY}"
+    voice_id: "XB0fDUnXU5powFXDhCwa"  # 温暖男声
+
+# 用户偏好存储
+storage:
+  type: "json"  # 或 "sqlite"
+  path: "./data/user_preferences.json"
+
+# 定时任务（自动播放）
+scheduler:
+  enabled: true
+  morning_greeting: "08:00"  # 早上问候时间
+  evening_wind_down: "21:00"  # 晚间放松时间
+
+# 日志
+logging:
+  level: "INFO"
+  file: "./logs/claudio.log"
