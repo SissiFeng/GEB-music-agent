@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claudio Radio - AI Music DJ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Logo -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">📻</span>
+                <h1>CLAUDIO RADIO</h1>
+            </div>
+            <div class="subtitle">AI Music Curator & DJ</div>
+        </header>
+
+        <!-- Main Player Card -->
+        <main class="player-card">
+            <!-- Pixel Clock Display -->
+            <div class="clock-section">
+                <div class="pixel-clock" id="clock">00:00:00</div>
+                <div class="date-display" id="date">Loading...</div>
+            </div>
+
+            <!-- ON AIR Indicator -->
+            <div class="on-air-section">
+                <div class="on-air-indicator" id="onAir">
+                    <span class="on-air-light"></span>
+                    <span class="on-air-text">ON AIR</span>
+                </div>
+            </div>
+
+            <!-- Now Playing -->
+            <div class="now-playing-section" id="nowPlaying">
+                <div class="album-art">
+                    <div class="album-placeholder">
+                        <span>🎵</span>
+                    </div>
+                </div>
+                
+                <div class="track-info">
+                    <div class="track-label">NOW PLAYING</div>
+                    <h2 class="track-title" id="trackTitle">Welcome to Claudio</h2>
+                    <p class="track-artist" id="trackArtist">Your AI Music DJ</p>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-section">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="totalTime">0:00</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-section">
+                <button class="control-btn" id="prevBtn" title="Previous">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </button>
+                
+                <button class="control-btn play-btn" id="playBtn" title="Play/Pause">
+                    <svg viewBox="0 0 24 24" fill="currentColor" id="playIcon">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor" id="pauseIcon" style="display:none">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                </button>
+                
+                <button class="control-btn" id="nextBtn" title="Next">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </button>
+            </div>
+
+            <!-- DJ Message Box -->
+            <div class="dj-message-box" id="djMessageBox">
+                <div class="dj-avatar">🎙️</div>
+                <div class="dj-content">
+                    <div class="dj-name">Claudio</div>
+                    <div class="dj-message" id="djMessage">Click the microphone to start...</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Chat/Input Section -->
+        <section class="chat-section">
+            <div class="chat-history" id="chatHistory"></div>
+            
+            <div class="input-section">
+                <input 
+                    type="text" 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Say something to the DJ... (e.g., 'Play something for coding')"
+                    autocomplete="off"
+                >
+                <button class="send-btn" id="sendBtn">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Playlist Sidebar -->
+        <aside class="playlist-sidebar" id="playlistSidebar">
+            <div class="playlist-header">
+                <h3>Playlist</h3>
+                <span class="playlist-count" id="playlistCount">0 songs</span>
+            </div>
+            <div class="playlist-content" id="playlistContent">
+                <div class="empty-playlist">No songs yet. Ask Claudio to play something!</div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="audioPlayer" preload="auto"></audio>
+
+    <script src="{{ url_for('static', filename='player.js') }}"></script>
+</body>
+</html>

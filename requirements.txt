@@ -5,6 +5,10 @@ python-telegram-bot>=20.0
 python-dotenv>=1.0.0
 pyyaml>=6.0
 
+# Web 界面
+flask>=2.3.0
+flask-cors>=4.0.0
+
 # AI 模型
 anthropic>=0.21.0
 openai>=1.0.0
