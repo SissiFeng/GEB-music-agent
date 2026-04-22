@@ -19,6 +19,9 @@ try:
 except ImportError:
     NETEASE_AVAILABLE = False
 
+# Kimi (Moonshot) client — optional AI personality layer
+from kimi_client import KimiClient
+
 class TimeSlot(Enum):
     """时段定义"""
     EARLY_MORNING = "early_morning"  # 5:00-8:00
@@ -76,7 +79,12 @@ class MusicCurator:
         self.current_playlist: Optional[Playlist] = None
         self.current_song_index = 0
         self.conversation_history: List[Dict] = []
-        
+
+        # 初始化 Kimi (degrades silently if MOONSHOT_API_KEY unset)
+        self.kimi = KimiClient()
+        if self.kimi.enabled:
+            print("✅ Kimi DJ 已启用")
+
         # 初始化网易云音乐 API
         self.netease = None
         if use_netease and NETEASE_AVAILABLE:
@@ -159,10 +167,29 @@ class MusicCurator:
         """生成 DJ 开场白"""
         time_slot = self.get_current_time_slot()
         config = self.TIME_MOOD_MAP[time_slot]
-        
+
         hour = datetime.now().hour
         minute = datetime.now().minute
-        
+
+        # Try Kimi for a fresh personality-driven intro; fall back to templates on failure.
+        if self.kimi.enabled:
+            user_request = context.get("user_request", "")
+            weather = context.get("weather", "")
+            prompt = (
+                f"当前时间 {hour}:{minute:02d},时段 {time_slot.value}。"
+                f"用户请求:{user_request or '无特定请求'}。"
+                f"{'天气:' + weather + '。' if weather else ''}"
+                "请用 1-2 句话作为电台开场白,自然、温暖、有个性,不要寒暄套话。"
+            )
+            ai_intro = self.kimi.chat(
+                system="你是 Claudio,一个温暖、有品味、会聊天的中文 AI 音乐电台 DJ。语言简洁自然,像朋友聊天,避免客套。",
+                user=prompt,
+                max_tokens=120,
+                temperature=0.9,
+            )
+            if ai_intro:
+                return ai_intro
+
         # 根据时段生成不同的开场白
         intros = {
             TimeSlot.EARLY_MORNING: [
@@ -579,19 +606,34 @@ class MusicCurator:
     
     def generate_song_intro(self, song: Song) -> str:
         """生成歌曲介绍"""
+        if self.kimi.enabled:
+            energy_desc = "节奏感强" if song.energy > 0.7 else ("舒缓" if song.energy < 0.3 else "中速")
+            prompt = (
+                f"即将播放《{song.title}》- {song.artist}（能量感：{energy_desc}）。"
+                "请用 1 句话作为过场介绍，有 DJ 语感，不要只是念歌名。"
+            )
+            ai_intro = self.kimi.chat(
+                system="你是 Claudio，一个中文 AI 音乐电台 DJ。过场介绍要短、有味道，像电台老手。",
+                user=prompt,
+                max_tokens=80,
+                temperature=0.9,
+            )
+            if ai_intro:
+                return ai_intro
+
         intros = [
             f"接下来是 {song.artist} 的《{song.title}》。",
             f"这首歌来自 {song.artist}，歌名是《{song.title}》。",
             f"{song.artist} 的《{song.title}》，希望你喜欢。",
             f"下面这首歌是《{song.title}》，演唱者是 {song.artist}。",
         ]
-        
+
         # 根据歌曲特点添加描述
         if song.energy > 0.7:
             intros.append(f"来一首节奏感强的，{song.artist} 的《{song.title}》。")
         elif song.energy < 0.3:
             intros.append(f"放慢节奏，听听 {song.artist} 的《{song.title}》。")
-        
+
         return random.choice(intros)
 
 

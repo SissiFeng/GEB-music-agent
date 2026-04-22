@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Claudio</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#0b0f1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Claudio">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
+</head>
+<body>
+    <div class="app">
+
+        <!-- ── top bar ── -->
+        <header class="topbar">
+            <div class="logo">Claudio</div>
+            <div class="topbar-right">
+                <div class="theme-toggle" role="tablist" aria-label="theme">
+                    <button class="tt-btn active" data-theme="dark">DARK</button>
+                    <button class="tt-btn" data-theme="light">LIGHT</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ── deck: clock + slot switcher + status ── -->
+        <section class="deck" id="deck">
+            <div class="scanlines" aria-hidden="true"></div>
+            <div class="dotgrid" aria-hidden="true"></div>
+            <span class="corner tl">┌</span>
+            <span class="corner tr">┐</span>
+            <span class="corner bl">└</span>
+            <span class="corner br">┘</span>
+
+            <div class="deck-head">
+                <span class="freq">FM Sissi</span>
+                <span class="station-id" id="stationId">CLAUDIO / BROADCAST</span>
+                <span class="signal" aria-hidden="true">
+                    <i></i><i></i><i></i><i></i>
+                </span>
+            </div>
+
+            <div class="clock-led" id="clockLed" aria-label="current time">
+                <!-- populated by JS -->
+            </div>
+
+            <div class="date-row">
+                <span id="clockWeekday">—</span>
+                <span class="sep">·</span>
+                <span id="clockDate">—</span>
+            </div>
+
+            <div class="slot-switcher" id="slotSwitcher" hidden>
+                <button class="sw-arrow" id="swPrev" aria-label="previous slot">◀</button>
+                <div class="sw-body">
+                    <div class="sw-label">NOW SHOWING</div>
+                    <div class="sw-name" id="swName">—</div>
+                    <div class="sw-time" id="swTime">—</div>
+                </div>
+                <button class="sw-arrow" id="swNext" aria-label="next slot">▶</button>
+            </div>
+
+            <div class="status-row">
+                <span class="status-line" id="statusLine">
+                    <span class="status-dot idle"></span>
+                    <span class="status-text">IDLE · TAP ▶ TO GO ON AIR</span>
+                </span>
+                <span class="since" id="sinceTimer" hidden>T+ 00:00</span>
+            </div>
+        </section>
+
+        <!-- ── player row ── -->
+        <section class="player" id="player" hidden>
+            <div class="pl-left">
+                <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                <div class="pl-textblock">
+                    <div class="pl-title" id="plTitle">—</div>
+                    <div class="pl-state" id="plState">PLAYING</div>
+                </div>
+            </div>
+            <div class="pl-controls">
+                <button id="plPrev" title="previous">|◀</button>
+                <button id="plPlayPause" class="pp" title="play/pause">❚❚</button>
+                <button id="plNext" title="next">▶|</button>
+                <button id="plStop" title="stop">■</button>
+                <button id="plRegen" title="regenerate today's playlist">↻</button>
+                <div class="vol">
+                    <span class="vol-label">VOL</span>
+                    <input type="range" id="plVol" min="0" max="100" value="80">
+                </div>
+            </div>
+            <div class="pl-progress">
+                <span id="plCurTime">0:00</span>
+                <div class="pl-track" id="plTrack"><div class="pl-fill" id="plFill"></div></div>
+                <span id="plTotalTime">0:00</span>
+            </div>
+        </section>
+
+        <!-- ── queue (mini, beneath player) ── -->
+        <section class="queue" id="queuePanel" hidden>
+            <header class="queue-head">
+                <span>QUEUE</span>
+                <span id="queueCount">0 TRACKS</span>
+            </header>
+            <ol class="queue-list" id="queueList"></ol>
+        </section>
+
+        <!-- ── big play button (visible when idle, becomes small) ── -->
+        <button class="go-live" id="goLive" aria-label="start broadcast">
+            <span class="gl-inner">▶ GO LIVE</span>
+        </button>
+
+        <!-- ── footer ── -->
+        <footer class="bottom">
+            <span class="bottom-left">
+                <span class="bottom-dot"></span>
+                Claudio
+            </span>
+            <span class="bottom-eq" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i>
+            </span>
+        </footer>
+
+    </div>
+
+    <audio id="audio" preload="auto"></audio>
+
+    <script src="{{ url_for('static', filename='schedule.js') }}"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js", { scope: "/" })
+            .catch((err) => console.warn("SW registration failed:", err));
+        });
+      }
+    </script>
+</body>
+</html>

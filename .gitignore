@@ -48,6 +48,10 @@ audio_cache/
 *.aiff
 *.mp3
 
+# Runtime state
+web/playlist_cache.json
+web/played_history.json
+
 # Data
 *.db
 *.sqlite

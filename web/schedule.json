@@ -1,0 +1,71 @@
+{
+  "comment": "Each slot describes a MOOD — not a genre. Kimi decides the sound each day based on weather, recently-played history, and trending Netease playlists sampled from seed_categories. Set exploration=high for more discovery, low for safer picks. Delete seed_categories to skip netease sampling for that slot.",
+  "slots": [
+    {
+      "id": "wake",
+      "time_start": "07:00",
+      "time_end": "10:00",
+      "name": "房间先醒",
+      "device": "naim宝宝",
+      "mood": "the unsettled-but-alive feeling of just opening your eyes — let the sound be tender or a little strange, warm or crisp, but never demanding. Language and genre are open; what matters is the slow-waking pace.",
+      "seed_categories": ["华语", "欧美", "民谣", "轻音乐"],
+      "length": 10,
+      "exploration": "high"
+    },
+    {
+      "id": "deep-work",
+      "time_start": "10:00",
+      "time_end": "13:00",
+      "name": "深度工作",
+      "device": "sony小黑",
+      "mood": "sustained focus — cinematic without being distracting, emotional without pulling attention. Room for instrumental, ambient, modern classical, minimal electronic, post-rock. Vocals welcome only if they blur into texture.",
+      "seed_categories": ["电子", "后摇", "古典", "爵士"],
+      "length": 14,
+      "exploration": "high"
+    },
+    {
+      "id": "lunch-break",
+      "time_start": "13:00",
+      "time_end": "14:30",
+      "name": "午休韩语",
+      "device": "naim宝宝",
+      "mood": "a loose, unhurried lunch hour — contemporary Korean indie / K-R&B / J-pop / city pop vibes. Warm, low-stakes, slightly nostalgic.",
+      "seed_categories": ["韩语", "日语", "R&B"],
+      "length": 8,
+      "exploration": "medium"
+    },
+    {
+      "id": "afternoon-drift",
+      "time_start": "14:30",
+      "time_end": "18:00",
+      "name": "下午漂流",
+      "device": "sony小黑",
+      "mood": "the afternoon lull — don't wake me up, don't put me to sleep. Can be lo-fi, sun-kissed electronic, mellow indie, old soul, bossa, anything that feels like light through a window.",
+      "seed_categories": ["欧美", "独立", "民谣", "电子"],
+      "length": 12,
+      "exploration": "high"
+    },
+    {
+      "id": "evening",
+      "time_start": "18:00",
+      "time_end": "21:00",
+      "name": "傍晚散步",
+      "device": "naim宝宝",
+      "mood": "coming back to yourself at the end of a day — songs that carry feeling without demanding it. Everything from Cantopop to post-rock to modern jazz is welcome.",
+      "seed_categories": ["华语", "欧美", "民谣", "爵士"],
+      "length": 10,
+      "exploration": "high"
+    },
+    {
+      "id": "wind-down",
+      "time_start": "21:00",
+      "time_end": "24:00",
+      "name": "夜晚收尾",
+      "device": "naim宝宝",
+      "mood": "late-night introspection — intimate, warm, close-miked. Not sleep music; music to think against. Piano, quiet jazz, hushed ballads, ambient with melody.",
+      "seed_categories": ["爵士", "古典", "民谣"],
+      "length": 10,
+      "exploration": "medium"
+    }
+  ]
+}
