@@ -2,7 +2,7 @@
 // Music streams and API responses are intentionally NOT cached:
 // Netease URLs are short-lived and AI replies are context-dependent.
 
-const CACHE = "claudio-shell-v7";
+const CACHE = "claudio-shell-v10";
 const SHELL = [
   "/",
   "/static/schedule.css",

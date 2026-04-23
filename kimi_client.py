@@ -169,6 +169,44 @@ class KimiClient:
         return parsed[:length]
 
 
+    def extract_songs_from_text(self, text: str, max_songs: int = 40) -> List[dict]:
+        """Parse a freeform blob of text (social post, chat log, list…) into song entries.
+
+        Unlike generate_playlist this is pure extraction — low temperature, no seeds,
+        no recommendations. If nothing identifiable, returns [].
+        """
+        if self._client is None:
+            return []
+
+        system = (
+            "You extract concrete song references from arbitrary text (social media posts, "
+            "blog notes, chat messages, lyric jottings, DJ set listings). "
+            "Output ONLY a JSON array of {\"title\": ..., \"artist\": ...}. "
+            "Rules:\n"
+            "  1. Only include songs explicitly named — don't speculate from vibe.\n"
+            "  2. Keep the original order from the text.\n"
+            "  3. Preserve the original language / script of titles (Chinese, English, Korean…).\n"
+            "  4. If the artist isn't stated, try to infer from surrounding context; "
+            "     otherwise use an empty string.\n"
+            "  5. Strip formatting artefacts like numbering, bullets, 《》, emoji, timestamps.\n"
+            "  6. If nothing identifiable is in the text, return []. No prose, no markdown."
+        )
+
+        raw = self.chat(
+            system=system,
+            user=text,
+            max_tokens=3000,
+            temperature=0.25,
+        )
+        if not raw:
+            return []
+
+        parsed = _parse_playlist_json(raw)
+        if not parsed:
+            logger.warning("Kimi extract returned unparseable output; first 200: %s", raw[:200])
+        return parsed[:max_songs]
+
+
 def _parse_playlist_json(raw: str) -> List[dict]:
     """Best-effort JSON array extraction tolerating code fences, stray prose, and truncation."""
     text = raw.strip()

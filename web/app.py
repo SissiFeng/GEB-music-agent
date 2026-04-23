@@ -353,6 +353,52 @@ def api_resolve_slot(slot_id):
     })
 
 
+@app.route('/api/weather')
+def api_weather():
+    """Return current weather from wttr.in, or {} if unavailable."""
+    try:
+        w = get_weather()
+    except Exception:
+        w = None
+    return jsonify(w or {})
+
+
+@app.route('/api/extract', methods=['POST'])
+def api_extract():
+    """Extract songs from freeform pasted text, resolve via YouTube, return tracks."""
+    if not playlist_kimi.enabled:
+        return jsonify({"error": "Kimi disabled — set MOONSHOT_API_KEY"}), 503
+
+    data = request.get_json(silent=True) or {}
+    text = (data.get("text") or "").strip()
+    if not text:
+        return jsonify({"error": "no text provided"}), 400
+    if len(text) > 8000:
+        return jsonify({"error": "text too long (max 8000 chars)"}), 413
+
+    songs = playlist_kimi.extract_songs_from_text(text)
+    if not songs:
+        return jsonify({"songs": [], "tracks": [], "missing": [], "error": "nothing identifiable extracted"}), 200
+
+    with ThreadPoolExecutor(max_workers=min(6, max(1, len(songs)))) as ex:
+        resolved = list(ex.map(
+            lambda s: resolve_via_youtube(s.get("title", ""), s.get("artist", "")),
+            songs,
+        ))
+    tracks = [r for r in resolved if r]
+    missing = [songs[i] for i, r in enumerate(resolved) if r is None]
+
+    if tracks:
+        _append_history(tracks)
+
+    return jsonify({
+        "songs": songs,
+        "tracks": tracks,
+        "missing": missing,
+        "source": "pasted",
+    })
+
+
 @app.route('/audio/<path:filename>')
 def serve_audio(filename):
     """Serve TTS-generated audio files from the shared cache dir."""

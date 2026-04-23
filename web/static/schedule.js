@@ -6,6 +6,12 @@
   const clockDateEl     = document.getElementById("clockDate");
   const stationIdEl     = document.getElementById("stationId");
 
+  const weatherRow      = document.getElementById("weatherRow");
+  const wxIcon          = document.getElementById("wxIcon");
+  const wxCity          = document.getElementById("wxCity");
+  const wxDesc          = document.getElementById("wxDesc");
+  const wxTemp          = document.getElementById("wxTemp");
+
   const slotSwitcher    = document.getElementById("slotSwitcher");
   const swPrev          = document.getElementById("swPrev");
   const swNext          = document.getElementById("swNext");
@@ -39,6 +45,14 @@
 
   const goLive          = document.getElementById("goLive");
   const ttButtons       = document.querySelectorAll(".tt-btn");
+
+  // -- paste & extract ------------------------------------------------------
+  const pasteToggle     = document.getElementById("pasteToggle");
+  const pasteBox        = document.getElementById("pasteBox");
+  const pasteText       = document.getElementById("pasteText");
+  const pasteExtract    = document.getElementById("pasteExtract");
+  const pasteClear      = document.getElementById("pasteClear");
+  const pasteStatus     = document.getElementById("pasteStatus");
 
   // -- state -----------------------------------------------------------------
   let slots = [];
@@ -346,6 +360,11 @@
 
   async function playSelected(opts = {}) {
     if (!slots.length) return;
+    // If we're in a detached state (e.g. after paste-play), rebind to current-time slot.
+    if (selectedIdx < 0 || selectedIdx >= slots.length) {
+      selectedIdx = currentSlotIdx(slots);
+      renderSwitcher();
+    }
     const slot = slots[selectedIdx];
     const slotId = slot.id;
     const { refresh = false } = opts;
@@ -407,6 +426,95 @@
     renderQueue();
   }
 
+  // =========================================================================
+  // paste & extract
+  // =========================================================================
+  function setPasteStatus(text, kind = "") {
+    pasteStatus.className = "paste-status" + (kind ? ` ${kind}` : "");
+    pasteStatus.textContent = text;
+  }
+
+  pasteToggle.addEventListener("click", () => {
+    const show = pasteBox.hidden;
+    pasteBox.hidden = !show;
+    pasteToggle.classList.toggle("active", show);
+    if (show) setTimeout(() => pasteText.focus(), 50);
+  });
+
+  pasteClear.addEventListener("click", () => {
+    pasteText.value = "";
+    setPasteStatus("");
+    pasteText.focus();
+  });
+
+  // Cmd/Ctrl+Enter inside the textarea triggers extract.
+  pasteText.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      extractAndPlay();
+    }
+  });
+
+  pasteExtract.addEventListener("click", extractAndPlay);
+
+  async function extractAndPlay() {
+    const text = (pasteText.value || "").trim();
+    if (!text) {
+      setPasteStatus("nothing to extract", "error");
+      pasteText.focus();
+      return;
+    }
+    pasteExtract.disabled = true;
+    setPasteStatus("KIMI IS READING…");
+
+    try {
+      const r = await fetch("/api/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `extract failed: ${r.status}`);
+
+      const tracks = data.tracks || [];
+      const missing = data.missing || [];
+
+      if (!tracks.length) {
+        setPasteStatus(data.error || "no playable tracks found", "error");
+        return;
+      }
+
+      // Build a virtual slot so the rest of the player UI still works.
+      const pastedSlot = {
+        id: "__pasted__",
+        name: "PASTED LIST",
+        time_start: "",
+        time_end: "",
+        device: "",
+      };
+      // Show "PASTED" context in the clock deck
+      selectedIdx = -1;  // detach from schedule slots
+      swNameEl.textContent = pastedSlot.name;
+      swTimeEl.textContent = missing.length
+        ? `${tracks.length} playing · ${missing.length} missing`
+        : `${tracks.length} tracks`;
+      stationIdEl.textContent = "CLAUDIO / PASTED";
+
+      startPlayback(pastedSlot, tracks);
+      setPasteStatus(
+        missing.length
+          ? `found ${tracks.length}, skipped ${missing.length}`
+          : `found ${tracks.length} ✓`,
+        "ok"
+      );
+    } catch (e) {
+      console.error(e);
+      setPasteStatus((e.message || "failed").toUpperCase(), "error");
+    } finally {
+      pasteExtract.disabled = false;
+    }
+  }
+
   function setPlayPauseGlyph(isPlaying) {
     plPlayPause.textContent = isPlaying ? "❚❚" : "▶";
     plState.textContent = isPlaying ? "PLAYING" : "PAUSED";
@@ -455,6 +563,12 @@
     playerEl.hidden = true;
     queuePanel.hidden = true;
     queueIndex = -1;
+    // If we were on a pasted list, snap switcher back to the current-time slot.
+    if (slots.length && (selectedIdx < 0 || activeSlotId === "__pasted__")) {
+      selectedIdx = currentSlotIdx(slots);
+      renderSwitcher();
+    }
+    activeSlotId = null;
     setIdleStatus("IDLE · TAP ▶ TO GO ON AIR");
   }
 
@@ -520,10 +634,44 @@
   // =========================================================================
   // init
   // =========================================================================
+  function weatherIconFor(main) {
+    const m = (main || "").toLowerCase();
+    if (m.includes("thunder")) return "⚡";
+    if (m.includes("drizzle")) return "☂";
+    if (m.includes("rain"))    return "☔";
+    if (m.includes("snow"))    return "❄";
+    if (m.includes("mist") || m.includes("fog") || m.includes("haze")) return "≈";
+    if (m.includes("cloud"))   return "☁";
+    if (m.includes("clear") || m.includes("sunny")) return "☀";
+    return "◈";
+  }
+
+  async function loadWeather() {
+    try {
+      const r = await fetch("/api/weather");
+      const w = await r.json();
+      if (!w || !w.city) {
+        weatherRow.hidden = true;
+        return;
+      }
+      weatherRow.hidden = false;
+      wxIcon.textContent = weatherIconFor(w.main || w.description);
+      wxCity.textContent = (w.city || "").toUpperCase();
+      wxDesc.textContent = (w.description || "").toUpperCase();
+      wxTemp.textContent = (w.temp_c !== undefined && w.temp_c !== null)
+        ? `${Math.round(w.temp_c)}°C` : "";
+    } catch {
+      weatherRow.hidden = true;
+    }
+  }
+
   async function init() {
     initClockDOM();
     tickClock();
     setInterval(tickClock, 1000);
+    loadWeather();
+    // Refresh weather every 20 min (wttr.in is cached server-side for 30 min anyway)
+    setInterval(loadWeather, 20 * 60 * 1000);
 
     try {
       const r = await fetch("/api/schedule");

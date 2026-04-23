@@ -26,12 +26,28 @@
         <header class="topbar">
             <div class="logo">Claudio</div>
             <div class="topbar-right">
+                <button class="pill-btn" id="pasteToggle" title="paste text to extract songs">◊ PASTE</button>
                 <div class="theme-toggle" role="tablist" aria-label="theme">
                     <button class="tt-btn active" data-theme="dark">DARK</button>
                     <button class="tt-btn" data-theme="light">LIGHT</button>
                 </div>
             </div>
         </header>
+
+        <!-- ── paste-to-extract panel ── -->
+        <section class="paste-box" id="pasteBox" hidden>
+            <header class="paste-head">
+                <span>PASTE &amp; EXTRACT</span>
+                <span class="paste-hint">paste a post, a list, lyric notes — Kimi finds the songs</span>
+            </header>
+            <textarea id="pasteText" spellcheck="false"
+                placeholder="e.g.&#10;&#10;我最近循环的:&#10;1. 《夜曲》- 周杰伦&#10;2. Midnight City by M83&#10;3. Tycho — Awake"></textarea>
+            <div class="paste-actions">
+                <button id="pasteExtract" class="paste-primary">EXTRACT &amp; PLAY ▶</button>
+                <button id="pasteClear">CLEAR</button>
+                <span class="paste-status" id="pasteStatus"></span>
+            </div>
+        </section>
 
         <!-- ── deck: clock + slot switcher + status ── -->
         <section class="deck" id="deck">
@@ -58,6 +74,15 @@
                 <span id="clockWeekday">—</span>
                 <span class="sep">·</span>
                 <span id="clockDate">—</span>
+            </div>
+
+            <div class="weather-row" id="weatherRow" hidden>
+                <span class="wx-icon" id="wxIcon">☁</span>
+                <span id="wxCity">—</span>
+                <span class="sep">·</span>
+                <span id="wxDesc">—</span>
+                <span class="sep">·</span>
+                <span id="wxTemp">—</span>
             </div>
 
             <div class="slot-switcher" id="slotSwitcher" hidden>

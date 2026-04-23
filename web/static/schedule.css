@@ -80,14 +80,37 @@ body {
 
 .logo {
   font-family: "Silkscreen", "VT323", monospace;
-  font-weight: 400;
-  font-size: 30px;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  font-size: 42px;
+  letter-spacing: 0.02em;
   color: var(--fg);
   line-height: 1;
 }
+@media (max-width: 560px) {
+  .logo { font-size: 32px; }
+}
 
 .topbar-right { display: flex; gap: 10px; align-items: center; }
+
+/* small pill-style button (used in topbar for PASTE) */
+.pill-btn {
+  background: transparent;
+  color: var(--fg-dim);
+  border: 1px solid var(--btn-border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-family: "Silkscreen", monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.pill-btn:hover { color: var(--fg); border-color: var(--line-bright); background: var(--btn-hover); }
+.pill-btn.active {
+  color: var(--accent);
+  border-color: var(--accent-soft);
+  background: rgba(61,255,142,0.06);
+}
 
 .theme-toggle {
   display: inline-flex;
@@ -215,9 +238,10 @@ body {
    ========================================================================= */
 
 .clock-led {
-  --dot:   9px;
-  --gap:   3px;
-  --glow-r: 8px;
+  --dot-w:  9px;    /* each cell: narrower than tall for an LED-marquee feel */
+  --dot-h:  13px;
+  --gap:    2px;
+  --glow-r: 4px;
   position: relative;
   z-index: 3;
   display: flex;
@@ -228,14 +252,14 @@ body {
 }
 .digit {
   display: grid;
-  grid-template-columns: repeat(5, var(--dot));
-  grid-template-rows:    repeat(7, var(--dot));
+  grid-template-columns: repeat(5, var(--dot-w));
+  grid-template-rows:    repeat(7, var(--dot-h));
   gap: var(--gap);
 }
 .digit span {
-  width: var(--dot);
-  height: var(--dot);
-  border-radius: 50%;
+  width: var(--dot-w);
+  height: var(--dot-h);
+  border-radius: 1px;  /* barely-softened corners */
   background: transparent;
   transition: background 180ms ease, box-shadow 180ms ease;
 }
@@ -253,13 +277,13 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: calc(var(--dot) * 2.4);
-  padding: calc(var(--dot) * 1.8) 0;
+  gap: calc(var(--dot-h) * 1.8);
+  padding: calc(var(--dot-h) * 1.4) 0;
 }
 .colon-dots span {
-  width: var(--dot);
-  height: var(--dot);
-  border-radius: 50%;
+  width: var(--dot-w);
+  height: var(--dot-h);
+  border-radius: 1px;
   background: var(--fg);
   box-shadow: 0 0 var(--glow-r) var(--glow);
   animation: blink-colon 1.1s step-end infinite;
@@ -271,7 +295,7 @@ body {
 @keyframes blink-colon { 50% { opacity: 0.15; } }
 
 @media (max-width: 560px) {
-  .clock-led { --dot: 6px; --gap: 2px; --glow-r: 5px; gap: 12px; }
+  .clock-led { --dot-w: 6px; --dot-h: 9px; --gap: 2px; --glow-r: 3px; gap: 12px; }
 }
 
 /* date row */
@@ -283,9 +307,29 @@ body {
   font-size: 11px;
   letter-spacing: 0.22em;
   color: var(--fg-dim);
-  margin-bottom: 24px;
+  margin-bottom: 10px;
 }
-.date-row .sep { margin: 0 8px; color: var(--fg-dimer); }
+.date-row .sep, .weather-row .sep { margin: 0 8px; color: var(--fg-dimer); }
+
+.weather-row {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  font-family: "Silkscreen", monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--fg-dim);
+  margin-bottom: 22px;
+}
+.weather-row .wx-icon {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 13px;
+  transform: translateY(1px);
+  color: var(--fg-dim);
+  text-transform: none;
+  letter-spacing: 0;
+}
 
 /* =========================================================================
    Slot switcher
@@ -382,6 +426,100 @@ body {
   color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
+
+/* =========================================================================
+   Paste & extract panel
+   ========================================================================= */
+
+.paste-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px 12px;
+  margin-bottom: 12px;
+  animation: slide-in 220ms ease;
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.paste-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: "Silkscreen", monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--fg-dim);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.paste-hint {
+  font-family: "VT323", monospace;
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg-dimer);
+}
+
+#pasteText {
+  width: 100%;
+  min-height: 110px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--fg);
+  font-family: "VT323", "JetBrains Mono", monospace;
+  font-size: 17px;
+  line-height: 1.4;
+  resize: vertical;
+  outline: none;
+  transition: border-color 160ms ease;
+}
+#pasteText:focus { border-color: var(--accent-soft); }
+#pasteText::placeholder { color: var(--fg-dimer); }
+
+.paste-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.paste-actions button {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--btn-border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: "Silkscreen", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.paste-actions button:hover { background: var(--btn-hover); border-color: var(--line-bright); }
+.paste-primary {
+  color: var(--accent) !important;
+  border-color: var(--accent-soft) !important;
+}
+.paste-primary[disabled] {
+  color: var(--fg-dim) !important;
+  border-color: var(--line) !important;
+  cursor: default;
+}
+.paste-status {
+  font-family: "Silkscreen", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--fg-dim);
+  margin-left: auto;
+}
+.paste-status.error { color: var(--warn); }
+.paste-status.ok    { color: var(--accent); }
 
 /* =========================================================================
    Go-live button (shown when idle)
