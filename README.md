@@ -5,6 +5,8 @@ Your personalized AI music radio station. Claudio curates playlists based on you
 ![Python](https://img.shields.io/badge/Python-3.8+-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+<img width="1466" height="654" alt="Untitled 312" src="https://github.com/user-attachments/assets/0f5c22a6-6c37-4173-a1ce-67b7d271ca44" />
+
 ## ✨ Features
 
 - 🤖 **AI DJ Personality** - Claudio speaks, has personality, and guides your listening experience
@@ -12,7 +14,6 @@ Your personalized AI music radio station. Claudio curates playlists based on you
 - 💬 **Natural Language** - "Play something for coding", "Relaxing music", "Energizing playlist"
 - 🎙️ **Voice Announcements** - System TTS (free) or ElevenLabs (premium)
 - 📻 **Retro Radio UI** - Beautiful CLI interface inspired by vintage radios
-- 🎵 **Netease Cloud Music** - Access to vast Chinese music library
 
 ## 🚀 Quick Start
 
@@ -235,24 +236,6 @@ tts:
   provider: "system"  # "system" or "elevenlabs"
   elevenlabs_voice: "21m00Tcm4TlvDq8ikWAM"
 ```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) file
-
-## 🙏 Acknowledgments
-
-- [Binaryify/NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) - Netease Cloud Music API
-- [ElevenLabs](https://elevenlabs.io) - Premium TTS service
-- Inspired by the original [Claudio](https://www.xiaohongshu.com/) project
 
 ---
 
